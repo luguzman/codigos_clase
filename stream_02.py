@@ -24,7 +24,7 @@ step 5: a normal distribution can fail its normality test
 
 To run the while loop of the normality test until it fails:
 * Uncomment lines 31-33 and 80-82
-* Indent lines 35-78 (select them and press Tab)
+* Indent lines 35-78 (select them and press Tab; to undo indent press Shift+Tab)
 
 '''
 # playing with Borel-Cantelli: P[all tests are normal = True] = 0
