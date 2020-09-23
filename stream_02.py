@@ -22,6 +22,9 @@ step 3: Jarque-Bera test
 step 4: p-value
 step 5: a normal distribution can fail its normality test
 
+To run the while loop of the normality test until it fails:
+* Uncomment lines 30-32 and 79-81
+* Indent lines 35-78 (select them and press Tab)
 
 '''
 # playing with Borel-Cantelli: P[all tests are normal = True] = 0
