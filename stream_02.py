@@ -23,7 +23,7 @@ step 4: p-value
 step 5: a normal distribution can fail its normality test
 
 To run the while loop of the normality test until it fails:
-* Uncomment lines 30-32 and 79-81
+* Uncomment lines 31-33 and 80-82
 * Indent lines 35-78 (select them and press Tab)
 
 '''
