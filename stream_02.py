@@ -23,8 +23,8 @@ step 4: perform a Jarque-Bera test
 step 5: a normal distribution can fail its normality test
 
 To run the while loop of the normality test until it fails:
-* Uncomment lines 31-33 and 80-82
-* Indent lines 35-78 (select them and press Tab)
+* Uncomment lines 31-33 and 82-84
+* Indent lines 35-80 (select them and press Tab)
 
 '''
 ### playing with Borel-Cantelli: P[all tests are normal = True] = 0
