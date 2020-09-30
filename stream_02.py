@@ -35,7 +35,7 @@ To run the while loop of the normality test until it fails:
 # generate random variable
 x_size = 10**6
 degrees_freedom = 2
-type_random_variable = 'normal' # normal exponential student chi-squared
+type_random_variable = 'chi-squared' # normal exponential student chi-squared
 
 if type_random_variable == 'normal':
     x = np.random.standard_normal(size=x_size)
@@ -52,7 +52,7 @@ elif type_random_variable == 'chi-squared':
 
 # compute "risk metrics"
 x_mean = np.mean(x)
-x_stdev = np.std(x)
+x_std = np.std(x)
 x_skew = skew(x)
 x_kurt = kurtosis(x) # excess kurtosis
 x_var_95 = np.percentile(x,5)
@@ -64,7 +64,7 @@ is_normal = (p_value > 0.05) # equivalently jb < 6
 # print metrics
 print(x_str)
 print('mean ' + str(x_mean))
-print('std ' + str(x_stdev))
+print('std dev ' + str(x_std))
 print('skewness ' + str(x_skew))
 print('kurtosis ' + str(x_kurt))
 print('VaR 95% ' + str(x_var_95))
