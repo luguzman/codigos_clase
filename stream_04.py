@@ -22,7 +22,7 @@ importlib.reload(stream_functions)
 ric = '^VIX' # DBK.DE ^IXIC MXN=X ^STOXX ^S&P500 ^VIX
 file_extension = 'csv'
 
-x, x_str, t = stream_functions.load_time_series(ric, file_extension)
+x, x_str, t = stream_functions.load_timeseries(ric, file_extension)
 stream_functions.plot_time_series_price(t, ric)
 
 

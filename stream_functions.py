@@ -16,7 +16,7 @@ from scipy.optimize import minimize
 from numpy import linalg as LA
 
 
-def load_time_series(ric, file_extension):
+def load_timeseries(ric, file_extension):
     # get market data
     # remember to modify the path to match your own directory
     path = 'C:\\Users\Meva\\.spyder-py3\\data\\' + ric + '.' + file_extension
