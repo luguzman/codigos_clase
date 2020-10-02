@@ -15,12 +15,17 @@ from scipy.stats import skew, kurtosis, chi2, linregress
 from scipy.optimize import minimize
 from numpy import linalg as LA
 
+def print_number(n=5):
+    print(n)
 
-def load_timeseries(ric, file_extension):
+def load_timeseries(ric, file_extension='csv'):
     # get market data
     # remember to modify the path to match your own directory
     path = 'C:\\Users\Meva\\.spyder-py3\\data\\' + ric + '.' + file_extension
-    table_raw = pd.read_csv(path)
+    if file_extension == 'csv':
+        table_raw = pd.read_csv(path) # default csv
+    else:
+        table_raw = pd.read_excel(path)
     # create table of returns
     t = pd.DataFrame()
     t['date'] = pd.to_datetime(table_raw['Date'], dayfirst=True)
@@ -47,10 +52,10 @@ def plot_time_series_price(t, ric):
     plt.show()
     
     
-def plot_histogram(x, x_str, str1, str2):
+def plot_histogram(x, x_str, plot_str, bins=100):
     # plot histogram
     plt.figure()
-    plt.hist(x,bins=100)
+    plt.hist(x,bins)
     plt.title('Histogram ' + x_str)
-    plt.xlabel(str1 + '\n' + str2)
+    plt.xlabel(plot_str)
     plt.show()

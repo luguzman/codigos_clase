@@ -6,27 +6,23 @@ Created on Wed Sep 30 09:37:27 2020
 """
 
 import numpy as np
-# import pandas as pd
-# import matplotlib as mpl
+import pandas as pd
+import matplotlib as mpl
 import scipy
 import importlib
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from scipy.stats import skew, kurtosis, chi2
 
 # import our own files and reload
 import stream_functions
 importlib.reload(stream_functions)
 
-
 # input parameters
 ric = '^VIX' # DBK.DE ^IXIC MXN=X ^STOXX ^S&P500 ^VIX
-file_extension = 'csv'
+file_extension = 'csv' # csv o Excel extension
 
-x, x_str, t = stream_functions.load_timeseries(ric, file_extension)
+x, x_str, t = stream_functions.load_timeseries(ric)
 stream_functions.plot_time_series_price(t, ric)
-
-
-### Recycled code from stream_02.py ###
 
 # compute "risk metrics"
 x_size = len(x) # size of returns
@@ -43,16 +39,16 @@ is_normal = (p_value > 0.05) # equivalently jb < 6
 
 # print metrics
 round_digits = 4
-str1 = 'mean ' + str(np.round(x_mean,round_digits))\
+plot_str = 'mean ' + str(np.round(x_mean,round_digits))\
     + ' | std dev ' + str(np.round(x_std,round_digits))\
     + ' | skewness ' + str(np.round(x_skew,round_digits))\
     + ' | kurtosis ' + str(np.round(x_kurt,round_digits))\
-    + ' | Sharpe ratio ' + str(np.round(x_sharpe,round_digits))
-str2 = 'VaR 95% ' + str(np.round(x_var_95,round_digits))\
+    + ' | Sharpe ratio ' + str(np.round(x_sharpe,round_digits)) + '\n'\
+    + 'VaR 95% ' + str(np.round(x_var_95,round_digits))\
     + ' | CVaR 95% ' + str(np.round(x_cvar_95,round_digits))\
     + ' | jarque_bera ' + str(np.round(jb,round_digits))\
     + ' | p_value ' + str(np.round(p_value,round_digits))\
     + ' | is_normal ' + str(is_normal)
     
     
-stream_functions.plot_histogram(x, x_str, str1, str2)
+stream_functions.plot_histogram(x, x_str, plot_str)
