@@ -15,8 +15,10 @@ from scipy.stats import skew, kurtosis, chi2, linregress
 from scipy.optimize import minimize
 from numpy import linalg as LA
 
+
 def print_number(n=5):
     print(n)
+
 
 def load_timeseries(ric, file_extension='csv'):
     # get market data
