@@ -17,6 +17,7 @@ from scipy.stats import skew, kurtosis, chi2
 import stream_functions
 importlib.reload(stream_functions)
 
+
 class jarque_bera_test():
     
     def __init__(self, x, x_str):
@@ -58,13 +59,14 @@ class jarque_bera_test():
         
     def plot_str(self):
         plot_str = 'mean ' + str(np.round(self.mean,self.round_digits))\
+            + ' | median ' + str(np.round(self.median,self.round_digits))\
             + ' | std dev ' + str(np.round(self.std,self.round_digits))\
-            + ' | skewness ' + str(np.round(self.skew,self.round_digits))\
-            + ' | kurtosis ' + str(np.round(self.kurt,self.round_digits))\
-            + ' | Sharpe ratio ' + str(np.round(self.sharpe,self.round_digits)) + '\n'\
-            + 'VaR 95% ' + str(np.round(self.var_95,self.round_digits))\
-            + ' | CVaR 95% ' + str(np.round(self.cvar_95,self.round_digits))\
-            + ' | jarque_bera ' + str(np.round(self.jarque_bera,self.round_digits))\
-            + ' | p_value ' + str(np.round(self.p_value,self.round_digits))\
-            + ' | is_normal ' + str(self.is_normal)
+            + ' | skewness ' + str(np.round(self.skew,self.round_digits)) + '\n'\
+            + 'kurtosis ' + str(np.round(self.kurt,self.round_digits))\
+            + ' | Sharpe ratio ' + str(np.round(self.sharpe,self.round_digits))\
+            + ' | VaR 95% ' + str(np.round(self.var_95,self.round_digits))\
+            + ' | CVaR 95% ' + str(np.round(self.cvar_95,self.round_digits)) + '\n'\
+            + 'Jarque Bera ' + str(np.round(self.jarque_bera,self.round_digits))\
+            + ' | p-value ' + str(np.round(self.p_value,self.round_digits))\
+            + ' | is normal ' + str(self.is_normal)
         return plot_str

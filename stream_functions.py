@@ -44,7 +44,7 @@ def load_timeseries(ric, file_extension='csv'):
     return x, x_str, t
 
 
-def plot_time_series_price(t, ric):
+def plot_timeseries_price(t, ric):
     # plot timeseries of price
     plt.figure()
     plt.plot(t['date'],t['close'])
