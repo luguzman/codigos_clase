@@ -61,3 +61,33 @@ def plot_histogram(x, x_str, plot_str, bins=100):
     plt.title('Histogram ' + x_str)
     plt.xlabel(plot_str)
     plt.show()
+    
+
+def synchronise_timeseries(ric, benchmark, file_extension='csv'):
+    # loading data from csv or Excel file
+    x1, str1, t1 = load_timeseries(ric, file_extension)
+    x2, str2, t2 = load_timeseries(benchmark, file_extension)
+    # synchronize timestamps
+    timestamp1 = list(t1['date'].values)
+    timestamp2 = list(t2['date'].values)
+    timestamps = list(set(timestamp1) & set(timestamp2))
+    # synchronised time series for x1 or ric
+    t1_sync = t1[t1['date'].isin(timestamps)]
+    t1_sync.sort_values(by='date', ascending=True)
+    t1_sync = t1_sync.reset_index(drop=True)
+    # synchronised time series for x2 or benchmark
+    t2_sync = t2[t2['date'].isin(timestamps)]
+    t2_sync.sort_values(by='date', ascending=True)
+    t2_sync = t2_sync.reset_index(drop=True)
+    # table of returns for ric and benchmark
+    t = pd.DataFrame()
+    t['date'] = t1_sync['date']
+    t['price_1'] = t1_sync['close']
+    t['price_2'] = t2_sync['close']
+    t['return_1'] = t1_sync['return_close']
+    t['return_2'] = t2_sync['return_close']
+    # compute vectors of returns
+    y = t['return_1'].values
+    x = t['return_2'].values
+    
+    return x, y, t

@@ -20,8 +20,8 @@ import stream_classes
 importlib.reload(stream_classes)
 
 # input parameters
-ric = '^STOXX' # MT.AS SAN.MC BBVA.MC REP.MC VWS.CO EQNR.OL MXNUSD=X ^VIX
-benchmark = '^S&P500' # ^STOXX50E ^STOXX ^S&P500 ^NASDAQ ^FCHI ^GDAXI
+ric = '^VIX' # MT.AS SAN.MC BBVA.MC REP.MC VWS.CO EQNR.OL MXNUSD=X ^VIX
+benchmark = '^STOXX' # ^STOXX50E ^STOXX ^S&P500 ^NASDAQ ^FCHI ^GDAXI
 file_extension = 'csv'
 nb_decimals = 4
 
