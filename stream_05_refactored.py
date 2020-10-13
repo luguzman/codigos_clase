@@ -27,8 +27,8 @@ nb_decimals = 4
 
 capm = stream_classes.capm_manager(ric, benchmark)
 capm.load_timeseries()
-capm.compute()
+# capm.compute()
 capm.scatterplot()
 print(capm)
-capm.__str__()
+# capm.__str__()
 
