@@ -19,17 +19,18 @@ importlib.reload(stream_functions)
 import stream_classes
 importlib.reload(stream_classes)
 
-
 # input parameters
 ric = 'SGREN.MC' # DBK.DE ^IXIC MXN=X ^STOXX ^S&P500 ^VIX
 file_extension = 'csv' # csv o Excel extension
 
+# load timeseries
 x, x_str, t = stream_functions.load_timeseries(ric)
+
+# compute risk metrics in class jarque_bera_test
+jb = stream_classes.jarque_bera_test(x, x_str)
+jb.compute()
+print(jb)
+
+# plots
 stream_functions.plot_timeseries_price(t, ric)
-
-z = stream_classes.jarque_bera_test(x, x_str)
-z.compute()
-print(z)
-
-
-stream_functions.plot_histogram(x, x_str, z.plot_str())
+stream_functions.plot_histogram(x, x_str, jb.plot_str())
