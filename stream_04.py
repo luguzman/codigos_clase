@@ -31,7 +31,7 @@ print('-----')
 
 # compute risk metrics for simulated returns
 ric = 'simulated'
-type_random_variable = 'chi-squared' # normal exponential student chi-squared
+type_random_variable = 'normal' # normal exponential student chi-squared
 size = 10**6
 degrees_freedom = 2
 jb = stream_classes.jarque_bera_test(ric)
