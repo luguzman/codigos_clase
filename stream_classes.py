@@ -99,6 +99,14 @@ class jarque_bera_test():
         return plot_str
     
     
+    def plot_timeseries(self):
+        stream_functions.plot_timeseries_price(self.t, self.ric)
+        
+    
+    def plot_histogram(self):
+        stream_functions.plot_histogram(self.returns, self.str_name, self.plot_str())
+    
+    
 class capm_manager():
     
     def __init__(self, ric, benchmark):
@@ -162,6 +170,7 @@ class capm_manager():
         
     def plot_normalised(self):
         # plot 2 timeseries normalised at 100
+        timestamps = self.t['date']
         price_ric = self.t['price_1']
         price_benchmark = self.t['price_2'] 
         plt.figure(figsize=(12,5))
@@ -170,8 +179,8 @@ class capm_manager():
         plt.ylabel('Normalised prices')
         price_ric = 100 * price_ric / price_ric[0]
         price_benchmark = 100 * price_benchmark / price_benchmark[0]
-        plt.plot(price_ric, color='blue', label=self.ric)
-        plt.plot(price_benchmark, color='red', label=self.benchmark)
+        plt.plot(timestamps, price_ric, color='blue', label=self.ric)
+        plt.plot(timestamps, price_benchmark, color='red', label=self.benchmark)
         plt.legend(loc=0)
         plt.grid()
         plt.show()
@@ -183,8 +192,9 @@ class capm_manager():
         plt.title('Time series of prices')
         plt.xlabel('Time')
         plt.ylabel('Prices')
-        ax1 = self.t['price_1'].plot(color='blue', grid=True, label=self.ric)
-        ax2 = self.t['price_2'].plot(color='red', grid=True, secondary_y=True, label=self.benchmark)
+        ax = plt.gca()
+        ax1 = self.t.plot(kind='line', x='date', y='price_1',ax=ax, grid=True, color='blue', label=self.ric)
+        ax2 = self.t.plot(kind='line', x='date', y='price_2',ax=ax, grid=True,color='red', secondary_y=True, label=self.benchmark)
         ax1.legend(loc=2)
         ax2.legend(loc=1)
         plt.show()

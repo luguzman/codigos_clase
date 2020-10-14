@@ -24,8 +24,8 @@ ric = 'SGREN.MC' # DBK.DE ^IXIC MXN=X ^STOXX ^S&P500 ^VIX
 jb = stream_classes.jarque_bera_test(ric)
 jb.load_timeseries()
 jb.compute()
-stream_functions.plot_timeseries_price(jb.t, jb.ric)
-stream_functions.plot_histogram(jb.returns, jb.str_name, jb.plot_str())
+jb.plot_timeseries()
+jb.plot_histogram()
 print(jb)
 
 # compute risk metrics for simulated returns
@@ -36,5 +36,5 @@ degrees_freedom = 2
 jb = stream_classes.jarque_bera_test(ric)
 jb.generate_ramdom_vector(type_random_variable, size, degrees_freedom)
 jb.compute()
-stream_functions.plot_histogram(jb.returns, jb.str_name, jb.plot_str())
+jb.plot_histogram()
 print(jb)
