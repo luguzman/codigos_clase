@@ -27,6 +27,7 @@ jb.compute()
 jb.plot_timeseries()
 jb.plot_histogram()
 print(jb)
+print('-----')
 
 # compute risk metrics for simulated returns
 ric = 'simulated'
@@ -38,3 +39,4 @@ jb.generate_ramdom_vector(type_random_variable, size, degrees_freedom)
 jb.compute()
 jb.plot_histogram()
 print(jb)
+print('-----')
