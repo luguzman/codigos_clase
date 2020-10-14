@@ -19,18 +19,22 @@ importlib.reload(stream_functions)
 import stream_classes
 importlib.reload(stream_classes)
 
-# input parameters
+# compute risk metrics for real returns
 ric = 'SGREN.MC' # DBK.DE ^IXIC MXN=X ^STOXX ^S&P500 ^VIX
-file_extension = 'csv' # csv o Excel extension
-
-# load timeseries
-x, x_str, t = stream_functions.load_timeseries(ric)
-
-# compute risk metrics in class jarque_bera_test
-jb = stream_classes.jarque_bera_test(x, x_str)
+jb = stream_classes.jarque_bera_test(ric)
+jb.load_timeseries()
 jb.compute()
+stream_functions.plot_timeseries_price(jb.t, jb.ric)
+stream_functions.plot_histogram(jb.returns, jb.str_name, jb.plot_str())
 print(jb)
 
-# plots
-stream_functions.plot_timeseries_price(t, ric)
-stream_functions.plot_histogram(x, x_str, jb.plot_str())
+# compute risk metrics for simulated returns
+ric = 'simulated'
+type_random_variable = 'chi-squared' # normal exponential student chi-squared
+size = 10**6
+degrees_freedom = 2
+jb = stream_classes.jarque_bera_test(ric)
+jb.generate_ramdom_vector(type_random_variable, size, degrees_freedom)
+jb.compute()
+stream_functions.plot_histogram(jb.returns, jb.str_name, jb.plot_str())
+print(jb)

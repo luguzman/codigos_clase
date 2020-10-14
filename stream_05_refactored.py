@@ -20,15 +20,14 @@ import stream_classes
 importlib.reload(stream_classes)
 
 # input parameters
-ric = '^VIX' # MT.AS SAN.MC BBVA.MC REP.MC VWS.CO EQNR.OL MXNUSD=X ^VIX
-benchmark = '^S&P500' # ^STOXX50E ^STOXX ^S&P500 ^NASDAQ ^FCHI ^GDAXI
-file_extension = 'csv'
-nb_decimals = 4
+ric = 'MT.AS' # MT.AS SAN.MC BBVA.MC REP.MC VWS.CO EQNR.OL MXNUSD=X ^VIX
+benchmark = '^STOXX' # ^STOXX50E ^STOXX ^S&P500 ^NASDAQ ^FCHI ^GDAXI
 
 capm = stream_classes.capm_manager(ric, benchmark)
 capm.load_timeseries()
-# capm.compute()
+capm.compute()
 capm.scatterplot()
+capm.plot_normalised()
+capm.plot_dual_axes()
 print(capm)
-# capm.__str__()
 

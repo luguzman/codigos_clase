@@ -63,10 +63,10 @@ def plot_histogram(x, x_str, plot_str, bins=100):
     plt.show()
     
 
-def synchronise_timeseries(ric, benchmark, file_extension='csv'):
+def synchronise_timeseries(ric, benchmark, file_estension='csv'):
     # loading data from csv or Excel file
-    x1, str1, t1 = load_timeseries(ric, file_extension)
-    x2, str2, t2 = load_timeseries(benchmark, file_extension)
+    x1, str1, t1 = load_timeseries(ric, file_estension)
+    x2, str2, t2 = load_timeseries(benchmark, file_estension)
     # synchronize timestamps
     timestamp1 = list(t1['date'].values)
     timestamp2 = list(t2['date'].values)
