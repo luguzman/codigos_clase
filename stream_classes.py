@@ -23,6 +23,7 @@ class jarque_bera_test():
     def __init__(self, ric):
         self.ric = ric
         self.returns = []
+        self.t = pd.DataFrame()
         self.size = 0
         self.str_name = None
         self.mean = 0.0
@@ -36,10 +37,17 @@ class jarque_bera_test():
         self.jarque_bera = 0.0
         self.p_value = 0.0
         self.is_normal = 0.0
+        
+        
+    def __str__(self):
+        str_self = self.str_name + ' | size ' + str(self.size) + '\n' + self.plot_str()
+        return str_self
+
 
     def load_timeseries(self):
         self.returns, self.str_name, self.t = stream_functions.load_timeseries(self.ric)
         self.size = len(self.returns)
+        
         
     def generate_ramdom_vector(self, type_random_variable, size=10**6, degrees_freedom=None):
         # type_random_variable normal exponential student
@@ -60,6 +68,7 @@ class jarque_bera_test():
             self.returns = np.random.chisquare(df=degrees_freedom,size=size)
             self.str_name = 'Chi-squared RV (df = ' + str(degrees_freedom) + ')'
 
+
     def compute(self):
         self.mean = np.mean(self.returns)
         self.std = np.std(self.returns) # volatility
@@ -73,10 +82,7 @@ class jarque_bera_test():
         self.p_value = 1 - chi2.cdf(self.jarque_bera, df=2)
         self.is_normal = (self.p_value > 0.05) # equivalently jb < 6
 
-    def __str__(self):
-        str_self = self.str_name + ' | size ' + str(self.size) + '\n' + self.plot_str()
-        return str_self
-      
+
     def plot_str(self):
         nb_decimals = 4
         plot_str = 'mean ' + str(np.round(self.mean,nb_decimals))\
@@ -109,6 +115,7 @@ class capm_manager():
         self.r_squared = None
         self.predictor_linreg = []
         
+        
     def __str__(self):
         # str_self = '__str__ not yet defined, next course please'
         str_self = 'Linear regression | ric ' + self.ric\
@@ -121,9 +128,11 @@ class capm_manager():
             + ' | r-squared ' + str(self.r_squared)
         return str_self
         
+    
     def load_timeseries(self):
         # load timeseries and synchronise them
         self.x, self.y, self.t = stream_functions.synchronise_timeseries(self.ric, self.benchmark)
+    
     
     def compute(self):
         # linear regression of ric with respect to benchmark
@@ -137,6 +146,7 @@ class capm_manager():
         self.r_squared = np.round(r_value**2, nb_decimals) # pct of variance of y explained by x
         self.predictor_linreg = self.alpha + self.beta*self.x
         
+        
     def scatterplot(self):
         # scatterplot of returns
         str_title = 'Scatterplot of returns' + '\n' + self.__str__()
@@ -148,6 +158,7 @@ class capm_manager():
         plt.xlabel(self.benchmark)
         plt.grid()
         plt.show()
+        
         
     def plot_normalised(self):
         # plot 2 timeseries normalised at 100
@@ -164,6 +175,7 @@ class capm_manager():
         plt.legend(loc=0)
         plt.grid()
         plt.show()
+        
         
     def plot_dual_axes(self):
         # plot 2 timeseries with 2 vertical axes
