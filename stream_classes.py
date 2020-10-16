@@ -25,7 +25,7 @@ class jarque_bera_test():
         self.returns = []
         self.t = pd.DataFrame()
         self.size = 0
-        self.str_name = None
+        self.str_name = ''
         self.mean = 0.0
         self.std = 0.0
         self.skew = 0.0
@@ -49,8 +49,8 @@ class jarque_bera_test():
         self.size = len(self.returns)
         
         
-    def generate_ramdom_vector(self, type_random_variable, size=10**6, degrees_freedom=None):
-        # type_random_variable normal exponential student
+    def generate_random_vector(self, type_random_variable, size=10**6, degrees_freedom=None):
+        self.size = size
         if type_random_variable == 'normal':
             self.returns = np.random.standard_normal(size)
             self.str_name = 'Standard Normal RV'

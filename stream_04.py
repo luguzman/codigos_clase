@@ -20,7 +20,7 @@ import stream_classes
 importlib.reload(stream_classes)
 
 # compute risk metrics for real returns
-ric = 'SGREN.MC' # DBK.DE ^IXIC MXN=X ^STOXX ^S&P500 ^VIX
+ric = 'DBK.DE' # DBK.DE ^IXIC MXN=X ^STOXX ^S&P500 ^VIX
 jb = stream_classes.jarque_bera_test(ric)
 jb.load_timeseries()
 jb.compute()
@@ -33,9 +33,9 @@ print('-----')
 ric = 'simulated'
 type_random_variable = 'normal' # normal exponential student chi-squared
 size = 10**6
-degrees_freedom = 2
+degrees_freedom = 9
 jb = stream_classes.jarque_bera_test(ric)
-jb.generate_ramdom_vector(type_random_variable, size, degrees_freedom)
+jb.generate_random_vector(type_random_variable, size, degrees_freedom)
 jb.compute()
 jb.plot_histogram()
 print(jb)
