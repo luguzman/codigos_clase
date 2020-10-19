@@ -15,6 +15,10 @@ from scipy.stats import skew, kurtosis, chi2, linregress
 from scipy.optimize import minimize
 from numpy import linalg as LA
 
+# import our own files and reload
+import stream_classes
+importlib.reload(stream_classes)
+
 
 def print_number(n=5):
     print(n)
@@ -87,7 +91,18 @@ def synchronise_timeseries(ric, benchmark, file_extension='csv'):
     t['return_1'] = t1_sync['return_close']
     t['return_2'] = t2_sync['return_close']
     # compute vectors of returns
-    y = t['return_1'].values
-    x = t['return_2'].values
+    returns_ric = t['return_1'].values # variable y
+    returns_benchmark = t['return_2'].values # variable x
     
-    return x, y, t
+    return returns_benchmark, returns_ric, t # x, y, t
+
+
+def compute_beta(ric, benchmark, bool_print=False):
+    capm = stream_classes.capm_manager(ric, benchmark)
+    capm.load_timeseries()
+    capm.compute()
+    if bool_print:
+        print('------')
+        print(capm)
+    beta = capm.beta
+    return beta

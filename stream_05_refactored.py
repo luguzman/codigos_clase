@@ -31,3 +31,11 @@ capm.plot_normalised()
 capm.plot_dual_axes()
 print(capm)
 
+'''
+References
+
+plots
+https://queirozf.com/entries/pandas-dataframe-plot-examples-with-matplotlib-pyplot
+
+'''
+
