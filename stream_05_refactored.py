@@ -20,8 +20,8 @@ import stream_classes
 importlib.reload(stream_classes)
 
 # input parameters
-ric = '^GDAXI' # MT.AS SAN.MC BBVA.MC REP.MC VWS.CO EQNR.OL MXNUSD=X ^VIX
-benchmark = '^STOXX' # ^STOXX50E ^STOXX ^S&P500 ^NASDAQ ^FCHI ^GDAXI
+ric = 'EURUSD=X' # MT.AS SAN.MC BBVA.MC REP.MC VWS.CO EQNR.OL MXNUSD=X ^VIX GBPUSD=X CHFUSD=X
+benchmark = 'CHFUSD=X' # ^STOXX50E ^STOXX ^S&P500 ^NASDAQ ^FCHI ^GDAXI EURUSD=X
 
 capm = stream_classes.capm_manager(ric, benchmark)
 capm.load_timeseries()
@@ -30,4 +30,12 @@ capm.scatterplot()
 capm.plot_normalised()
 capm.plot_dual_axes()
 print(capm)
+
+'''
+References
+
+plots
+https://queirozf.com/entries/pandas-dataframe-plot-examples-with-matplotlib-pyplot
+
+'''
 

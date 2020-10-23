@@ -20,11 +20,11 @@ import stream_classes
 importlib.reload(stream_classes)
 
 # compute risk metrics for real returns
-ric = 'DBK.DE' # DBK.DE ^IXIC MXN=X ^STOXX ^S&P500 ^VIX
+ric = '^GDAXI' # DBK.DE ^IXIC MXN=X ^STOXX ^STOXX50E ^FCHI ^GDAXI ^S&P500 ^VIX
 jb = stream_classes.jarque_bera_test(ric)
 jb.load_timeseries()
 jb.compute()
-jb.plot_timeseries()
+# jb.plot_timeseries()
 jb.plot_histogram()
 print(jb)
 print('-----')
