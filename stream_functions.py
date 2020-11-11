@@ -44,7 +44,6 @@ def load_timeseries(ric, file_extension='csv'):
     # input for Jarque-Bera test
     x = t['return_close'].values # returns as array
     x_str = 'Real returns ' + ric # label e.g. ric
-    
     return x, x_str, t
 
 
@@ -67,10 +66,10 @@ def plot_histogram(x, x_str, plot_str, bins=100):
     plt.show()
     
 
-def synchronise_timeseries(ric, benchmark, file_extension='csv'):
+def synchronise_timeseries(benchmark, ric, file_extension='csv'):
     # loading data from csv or Excel file
-    x1, str1, t1 = load_timeseries(ric, file_extension)
-    x2, str2, t2 = load_timeseries(benchmark, file_extension)
+    x1, str1, t1 = load_timeseries(benchmark, file_extension)
+    x2, str2, t2 = load_timeseries(ric, file_extension)
     # synchronize timestamps
     timestamp1 = list(t1['date'].values)
     timestamp2 = list(t2['date'].values)
@@ -86,19 +85,18 @@ def synchronise_timeseries(ric, benchmark, file_extension='csv'):
     # table of returns for ric and benchmark
     t = pd.DataFrame()
     t['date'] = t1_sync['date']
-    t['price_1'] = t1_sync['close']
-    t['price_2'] = t2_sync['close']
-    t['return_1'] = t1_sync['return_close']
-    t['return_2'] = t2_sync['return_close']
+    t['price_1'] = t1_sync['close'] # price benchmark
+    t['price_2'] = t2_sync['close'] # price ric
+    t['return_1'] = t1_sync['return_close'] # return benchmark
+    t['return_2'] = t2_sync['return_close'] #return ric
     # compute vectors of returns
-    returns_ric = t['return_1'].values # variable y
-    returns_benchmark = t['return_2'].values # variable x
-    
+    returns_benchmark = t['return_1'].values # variable x
+    returns_ric = t['return_2'].values # variable y
     return returns_benchmark, returns_ric, t # x, y, t
 
 
-def compute_beta(ric, benchmark, bool_print=False):
-    capm = stream_classes.capm_manager(ric, benchmark)
+def compute_beta(benchmark, ric, bool_print=False):
+    capm = stream_classes.capm_manager(benchmark, ric)
     capm.load_timeseries()
     capm.compute()
     if bool_print:

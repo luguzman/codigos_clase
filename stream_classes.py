@@ -110,7 +110,7 @@ class jarque_bera_test():
     
 class capm_manager():
     
-    def __init__(self, ric, benchmark):
+    def __init__(self, benchmark, ric):
         self.ric = ric
         self.benchmark = benchmark
         self.returns_benchmark = [] # x
@@ -122,6 +122,7 @@ class capm_manager():
         self.null_hypothesis = False
         self.r_value = None
         self.r_squared = None
+        self.correlation = None
         self.predictor_linreg = [] # y = alpha + beta*x
         
         
@@ -133,14 +134,14 @@ class capm_manager():
             + ' | beta (slope) ' + str(self.beta) + '\n'\
             + 'p-value ' + str(self.p_value)\
             + ' | null hypothesis ' + str(self.null_hypothesis) + '\n'\
-            + 'r-value ' + str(self.r_value)\
+            + 'r-value (correlation) ' + str(self.r_value)\
             + ' | r-squared ' + str(self.r_squared)
         return str_self
         
     
     def load_timeseries(self):
         self.returns_benchmark, self.returns_ric, self.dataframe\
-            = stream_functions.synchronise_timeseries(self.ric, self.benchmark)
+            = stream_functions.synchronise_timeseries(self.benchmark, self.ric)
     
     
     def compute(self):
@@ -154,6 +155,7 @@ class capm_manager():
         self.null_hypothesis = p_value > 0.05 # p_value < 0.05 --> reject null hypothesis
         self.r_value = np.round(r_value, nb_decimals) # correlation coefficient
         self.r_squared = np.round(r_value**2, nb_decimals) # pct of variance of y explained by x
+        self.correlation = self.r_value
         self.predictor_linreg = self.alpha + self.beta*self.returns_benchmark
         
         
@@ -173,8 +175,8 @@ class capm_manager():
     def plot_normalised(self):
         # plot 2 timeseries normalised at 100
         timestamps = self.dataframe['date']
-        price_ric = self.dataframe['price_1']
-        price_benchmark = self.dataframe['price_2'] 
+        price_benchmark = self.dataframe['price_1']
+        price_ric = self.dataframe['price_2'] 
         plt.figure(figsize=(12,5))
         plt.title('Time series of prices | normalised at 100')
         plt.xlabel('Time')
@@ -196,9 +198,9 @@ class capm_manager():
         plt.ylabel('Prices')
         ax = plt.gca()
         ax1 = self.dataframe.plot(kind='line', x='date', y='price_1', ax=ax, grid=True,\
-                                  color='blue', label=self.ric)
+                                  color='blue', label=self.benchmark)
         ax2 = self.dataframe.plot(kind='line', x='date', y='price_2', ax=ax, grid=True,\
-                                  color='red', secondary_y=True, label=self.benchmark)
+                                  color='red', secondary_y=True, label=self.ric)
         ax1.legend(loc=2)
         ax2.legend(loc=1)
         plt.show()
@@ -206,9 +208,9 @@ class capm_manager():
         
 class hedge_manager():
     
-    def __init__(self, ric, benchmark, hedge_rics, delta):
-        self.ric = ric
+    def __init__(self, benchmark, ric, hedge_rics, delta):
         self.benchmark = benchmark
+        self.ric = ric
         self.hedge_rics = hedge_rics
         self.delta = delta
         self.beta = None
@@ -221,9 +223,9 @@ class hedge_manager():
         
         
     def load_inputs(self, bool_print=False):
-        self.beta = stream_functions.compute_beta(self.ric, self.benchmark)
+        self.beta = stream_functions.compute_beta(self.benchmark, self.ric)
         self.beta_usd = self.beta*self.delta
-        betas = [stream_functions.compute_beta(hedge_ric, self.benchmark) \
+        betas = [stream_functions.compute_beta(self.benchmark, hedge_ric) \
                        for hedge_ric in self.hedge_rics]
         self.betas = np.asarray(betas).reshape([len(self.hedge_rics),1])
         self.dataframe['ric'] = self.hedge_rics
