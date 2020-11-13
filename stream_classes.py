@@ -290,3 +290,136 @@ class hedge_manager():
         self.hedge_beta_usd = np.sum(self.dataframe['beta_usd'])
         if bool_print:
             self.print_output('Numerical solution with optimize.minimize')
+            
+            
+class portfolio_manager:
+    
+    def __init__(self, rics, nb_decimals):
+        self.rics = rics
+        self.nb_decimals = nb_decimals
+        self.covariance_matrix = [] # annualised
+        self.correlation_matrix = [] # annualised
+        self.returns = [] # annualised
+        self.volatilities = [] # annualised
+        
+        
+    def compute_covariance_matrix(self, bool_print=False):
+        # compute variance-covariance matrix by pairwise covariances
+        scale = 252 # annualised
+        size = len(self.rics)
+        mtx_covar = np.zeros([size,size])
+        mtx_correl = np.zeros([size,size])
+        vec_returns = np.zeros([size,1])
+        vec_volatilities = np.zeros([size,1])
+        returns = []
+        for i in range(size):
+            ric1 = self.rics[i]
+            temp_ret = []
+            for j in range(i+1):
+                ric2 = self.rics[j]
+                ret1, ret2, t = stream_functions.synchronise_timeseries(ric1, ric2)
+                returns = [ret1, ret2]
+                # covariances
+                temp_mtx = np.cov(returns)
+                temp_covar = scale*temp_mtx[0][1]
+                temp_covar = np.round(temp_covar,self.nb_decimals)
+                mtx_covar[i][j] = temp_covar
+                mtx_covar[j][i] = temp_covar
+                # correlations
+                temp_mtx = np.corrcoef(returns)
+                temp_correl = temp_mtx[0][1]
+                temp_correl = np.round(temp_correl,self.nb_decimals)
+                mtx_correl[i][j] = temp_correl
+                mtx_correl[j][i] = temp_correl
+                if j == 0:
+                    temp_ret = ret1
+            # returns
+            temp_mean = np.round(scale*np.mean(temp_ret), self.nb_decimals)
+            vec_returns[i] = temp_mean
+            # volatilities
+            temp_volatility = np.round(np.sqrt(scale)*np.std(temp_ret), self.nb_decimals)
+            vec_volatilities[i] = temp_volatility
+            
+        self.covariance_matrix = mtx_covar
+        self.correlation_matrix = mtx_correl
+        self.returns = vec_returns
+        self.volatilities = vec_volatilities
+        
+        if bool_print:
+            print('-----')
+            print('Portfolio_manager details:')
+            print('Securities:')
+            print(self.rics)
+            print('Returns (annualised):')
+            print(self.returns)
+            print('Volatilities (annualised):')
+            print(self.volatilities)
+            print('Variance-covariance matrix (annualised):')
+            print(self.covariance_matrix)
+            print('Correlation matrix:')
+            print(self.correlation_matrix)
+            
+            
+    def compute_portfolio(self, portfolio_type, notional):
+        
+        port_item = portfolio_item(self.rics, notional)
+        
+        if portfolio_type == 'min-variance':
+            port_min_variance, variance_explained = \
+                stream_functions.compute_portfolio_min_variance(self.covariance_matrix, notional)
+            port_item.type = portfolio_type
+            port_item.weights = port_min_variance
+            port_item.variance_explained = variance_explained
+            
+        elif portfolio_type == 'pca' or portfolio_type == 'max-variance':
+            port_pca, variance_explained = \
+                stream_functions.compute_portfolio_pca(self.covariance_matrix, notional)
+            port_item.type = 'pca'
+            port_item.weights = port_pca
+            port_item.variance_explained = variance_explained
+            
+        port_item.delta = sum(port_item.weights)
+        port_item.pnl_annual = np.dot(port_item.weights.T,self.returns).item()
+        port_item.return_annual = port_item.pnl_annual / notional
+        port_item.volatility_annual = \
+            stream_functions.compute_portfolio_volatility(self.covariance_matrix, port_item.weights)
+        if port_item.volatility_annual > 0.0:
+            port_item.sharpe_annual =  port_item.return_annual / port_item.volatility_annual
+            
+        return port_item
+            
+            
+class portfolio_item():
+    
+    def __init__(self, rics, notional):
+        self.rics = rics
+        self.notional = notional
+        self.type = ''
+        self.weights = []
+        self.delta = 0.0
+        self.pnl_annual = 0.0
+        self.return_annual = 0.0
+        self.volatility_annual = 0.0
+        self.sharpe_annual = 0.0
+        self.variance_explained = None
+        self.target_return = None
+
+
+    def summary(self):
+        print('-----')
+        print('Portfolio type: ' + self.type)
+        print('Rics:')
+        print(self.rics)
+        print('Weights:')
+        print(self.weights)
+        print('Notional (mnUSD): ' + str(self.notional))
+        print('Delta (mnUSD): ' + str(self.delta))
+        print('PnL annual (mnUSD): ' + str(self.pnl_annual))
+        print('Return annual (mnUSD): ' + str(self.return_annual))
+        print('Volatility annual (mnUSD): ' + str(self.volatility_annual))
+        print('Sharpe ratio annual: ' + str(self.sharpe_annual))
+        if not self.variance_explained == None:
+            print('Variance explained: ' + str(self.variance_explained))
+        if not self.target_return == None:
+            print('Target Return: ' + str(self.target_return))
+        

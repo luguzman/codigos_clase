@@ -112,3 +112,35 @@ def cost_function_beta_delta(x, delta, beta_usd, betas, epsilon=0.0):
     f_penalty = epsilon * sum(x**2).item()
     f = f_delta + f_beta + f_penalty
     return f
+
+
+def compute_portfolio_min_variance(covariance_matrix, notional):
+    eigenvalues, eigenvectors = LA.eigh(covariance_matrix)
+    variance_explained = eigenvalues[0] / sum(abs(eigenvalues))
+    eigenvector = eigenvectors[:,0]
+    if max(eigenvector) < 0.0:
+        eigenvector = - eigenvector
+    port_min_variance = notional * eigenvector / sum(abs(eigenvector))
+    return port_min_variance, variance_explained
+
+
+def compute_portfolio_pca(covariance_matrix, notional):
+    eigenvalues, eigenvectors = LA.eigh(covariance_matrix)
+    variance_explained = eigenvalues[-1] / sum(abs(eigenvalues))
+    eigenvector = eigenvectors[:,-1]
+    if max(eigenvector) < 0.0:
+        eigenvector = - eigenvector
+    port_pca = notional * eigenvector / sum(abs(eigenvector))
+    return port_pca, variance_explained
+
+
+def compute_portfolio_volatility(covariance_matrix, weights):
+    notional = sum(abs(weights))
+    if notional <= 0.0:
+        return 0.0
+    weights = weights / sum(abs(weights))
+    variance = np.dot(weights.T, np.dot(covariance_matrix, weights)).item()
+    if variance <= 0.0:
+        return 0.0
+    volatility = np.sqrt(variance)
+    return volatility

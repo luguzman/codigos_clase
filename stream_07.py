@@ -30,12 +30,12 @@ print('-----')
 print('nb_decimals ' + str(nb_decimals))
 print('scale ' + str(scale))
 
-rics = ['SAN.MC',\
-        'BBVA.MC',\
-        'SOGN.PA',\
-        'BNPP.PA',\
-        'INGA.AS',\
-        'KBC.BR']
+# rics = ['SAN.MC',\
+#         'BBVA.MC',\
+#         'SOGN.PA',\
+#         'BNPP.PA',\
+#         'INGA.AS',\
+#         'KBC.BR']
 # rics = ['MXNUSD=X',\
 #         'EURUSD=X',\
 #         'GBPUSD=X',\
