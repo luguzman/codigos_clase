@@ -24,12 +24,10 @@ importlib.reload(stream_classes)
 
 # input parameters
 nb_decimals = 6 # 3 4 5 6
-scale = 252 # 1 252
 notional = 10 # mnUSD
 print('-----')
 print('inputs:')
 print('nb_decimals ' + str(nb_decimals))
-print('scale ' + str(scale))
 print('notional ' + str(notional))
 
 rics = ['SAN.MC',\
@@ -84,4 +82,9 @@ portfolio_min_variance.summary()
 # compute PCA or max-variance portfolio
 portfolio_pca = port_mgr.compute_portfolio('pca', notional)
 portfolio_pca.summary()
+
+# compute default portfolio, which is equi-weight
+portfolio_equiweight = port_mgr.compute_portfolio('default', notional)
+portfolio_equiweight.summary()
+
 
