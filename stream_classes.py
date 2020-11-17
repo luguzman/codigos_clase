@@ -12,6 +12,7 @@ import scipy
 import importlib
 import matplotlib.pyplot as plt
 from scipy.stats import skew, kurtosis, chi2, linregress
+from scipy.optimize import minimize
 
 # import our own files and reload
 import stream_functions
@@ -109,7 +110,7 @@ class jarque_bera_test():
     
 class capm_manager():
     
-    def __init__(self, ric, benchmark):
+    def __init__(self, benchmark, ric):
         self.ric = ric
         self.benchmark = benchmark
         self.returns_benchmark = [] # x
@@ -121,6 +122,7 @@ class capm_manager():
         self.null_hypothesis = False
         self.r_value = None
         self.r_squared = None
+        self.correlation = None
         self.predictor_linreg = [] # y = alpha + beta*x
         
         
@@ -132,14 +134,14 @@ class capm_manager():
             + ' | beta (slope) ' + str(self.beta) + '\n'\
             + 'p-value ' + str(self.p_value)\
             + ' | null hypothesis ' + str(self.null_hypothesis) + '\n'\
-            + 'r-value ' + str(self.r_value)\
+            + 'r-value (correlation) ' + str(self.r_value)\
             + ' | r-squared ' + str(self.r_squared)
         return str_self
         
     
     def load_timeseries(self):
         self.returns_benchmark, self.returns_ric, self.dataframe\
-            = stream_functions.synchronise_timeseries(self.ric, self.benchmark)
+            = stream_functions.synchronise_timeseries(self.benchmark, self.ric)
     
     
     def compute(self):
@@ -153,6 +155,7 @@ class capm_manager():
         self.null_hypothesis = p_value > 0.05 # p_value < 0.05 --> reject null hypothesis
         self.r_value = np.round(r_value, nb_decimals) # correlation coefficient
         self.r_squared = np.round(r_value**2, nb_decimals) # pct of variance of y explained by x
+        self.correlation = self.r_value
         self.predictor_linreg = self.alpha + self.beta*self.returns_benchmark
         
         
@@ -172,8 +175,8 @@ class capm_manager():
     def plot_normalised(self):
         # plot 2 timeseries normalised at 100
         timestamps = self.dataframe['date']
-        price_ric = self.dataframe['price_1']
-        price_benchmark = self.dataframe['price_2'] 
+        price_benchmark = self.dataframe['price_1']
+        price_ric = self.dataframe['price_2'] 
         plt.figure(figsize=(12,5))
         plt.title('Time series of prices | normalised at 100')
         plt.xlabel('Time')
@@ -195,9 +198,9 @@ class capm_manager():
         plt.ylabel('Prices')
         ax = plt.gca()
         ax1 = self.dataframe.plot(kind='line', x='date', y='price_1', ax=ax, grid=True,\
-                                  color='blue', label=self.ric)
+                                  color='blue', label=self.benchmark)
         ax2 = self.dataframe.plot(kind='line', x='date', y='price_2', ax=ax, grid=True,\
-                                  color='red', secondary_y=True, label=self.benchmark)
+                                  color='red', secondary_y=True, label=self.ric)
         ax1.legend(loc=2)
         ax2.legend(loc=1)
         plt.show()
@@ -205,26 +208,28 @@ class capm_manager():
         
 class hedge_manager():
     
-    def __init__(self, ric, benchmark, hedge_rics, target_delta):
-        self.ric = ric
+    def __init__(self, benchmark, ric, hedge_rics, delta):
         self.benchmark = benchmark
+        self.ric = ric
         self.hedge_rics = hedge_rics
-        self.delta = target_delta
+        self.delta = delta
+        self.beta = None
+        self.beta_usd = None
         self.dataframe = pd.DataFrame()
         self.hedge_delta = None
         self.hedge_beta_usd = None
+        self.betas = []
+        self.optimal_hedge = []
         
         
     def load_inputs(self, bool_print=False):
-        # portfolio input
-        self.beta = stream_functions.compute_beta(self.ric, self.benchmark)
+        self.beta = stream_functions.compute_beta(self.benchmark, self.ric)
         self.beta_usd = self.beta*self.delta
-        # hedge input
-        hedge_betas = [stream_functions.compute_beta(hedge_ric, self.benchmark) \
+        betas = [stream_functions.compute_beta(self.benchmark, hedge_ric) \
                        for hedge_ric in self.hedge_rics]
+        self.betas = np.asarray(betas).reshape([len(self.hedge_rics),1])
         self.dataframe['ric'] = self.hedge_rics
-        self.dataframe['beta'] = hedge_betas
-        # print inputs
+        self.dataframe['beta'] = self.betas
         if bool_print:
             print('------')
             print('Input portfolio:')
@@ -236,23 +241,29 @@ class hedge_manager():
             for n in range(self.dataframe.shape[0]):
                 print('Beta for hedge[' + str(n) + '] = ' + self.dataframe['ric'][n] \
                       + ' vs ' + self.benchmark + ' is ' + str(self.dataframe['beta'][n]))
-             
+
                     
-    def compute(self, bool_print=False):
-        shape = [len(self.hedge_rics),1]
-        betas = np.asarray(self.dataframe['beta']).reshape(shape)
-        deltas = np.ones(shape)
+    def compute_exact(self, bool_print=False):
+        size = len(self.hedge_rics)
+        if not size == 2:
+            print('------')
+            print('Warning: cannot compute exact solution, hedge_rics size ' + str(size) + ' =/= 2')
+            return
+        deltas = np.ones([size,1])
         targets = -np.array([[self.delta],[self.beta_usd]])
-        mtx = np.transpose(np.column_stack((deltas,betas)))
-        optimal_hedge = np.linalg.inv(mtx).dot(targets)
-        self.dataframe['delta'] = optimal_hedge
-        self.dataframe['beta_usd'] = betas*optimal_hedge
+        mtx = np.transpose(np.column_stack((deltas,self.betas)))
+        self.optimal_hedge = np.linalg.inv(mtx).dot(targets)
+        self.dataframe['delta'] = self.optimal_hedge
+        self.dataframe['beta_usd'] = self.betas*self.optimal_hedge
         self.hedge_delta = np.sum(self.dataframe['delta'])
         self.hedge_beta_usd = np.sum(self.dataframe['beta_usd'])
-        # print result
         if bool_print:
+            self.print_output('Exact solution from linear algebra')
+            
+
+    def print_output(self, optimisation_type):
             print('------')
-            print('Optimisation result')
+            print('Optimisation result | ' + optimisation_type + ':')
             print('------')
             print('Delta: ' + str(self.delta))
             print('Beta USD: ' + str(self.beta_usd))
@@ -261,7 +272,154 @@ class hedge_manager():
             print('Hedge beta USD: ' + str(self.hedge_beta_usd))
             print('------')
             print('Betas for the hedge:')
-            print(betas)
+            print(self.betas)
             print('------')
             print('Optimal hedge:')
-            print(optimal_hedge)
+            print(self.optimal_hedge)
+            
+
+    def compute_numerical(self, epsilon=0.0, bool_print=False):
+        x = np.zeros([len(self.betas),1])
+        args = (self.delta, self.beta_usd, self.betas, epsilon)
+        optimal_result = minimize(fun=stream_functions.cost_function_beta_delta,\
+                                  x0=x, args=args, method='BFGS')
+        self.optimal_hedge = optimal_result.x.reshape([len(self.betas),1])
+        self.dataframe['delta'] = self.optimal_hedge
+        self.dataframe['beta_usd'] = self.betas*self.optimal_hedge
+        self.hedge_delta = np.sum(self.dataframe['delta'])
+        self.hedge_beta_usd = np.sum(self.dataframe['beta_usd'])
+        if bool_print:
+            self.print_output('Numerical solution with optimize.minimize')
+            
+            
+class portfolio_manager:
+    
+    def __init__(self, rics, nb_decimals):
+        self.rics = rics
+        self.nb_decimals = nb_decimals
+        self.covariance_matrix = [] # annualised
+        self.correlation_matrix = [] # annualised
+        self.returns = [] # annualised
+        self.volatilities = [] # annualised
+        
+        
+    def compute_covariance_matrix(self, bool_print=False):
+        # compute variance-covariance matrix by pairwise covariances
+        scale = 252 # annualised
+        size = len(self.rics)
+        mtx_covar = np.zeros([size,size])
+        mtx_correl = np.zeros([size,size])
+        vec_returns = np.zeros([size,1])
+        vec_volatilities = np.zeros([size,1])
+        returns = []
+        for i in range(size):
+            ric1 = self.rics[i]
+            temp_ret = []
+            for j in range(i+1):
+                ric2 = self.rics[j]
+                ret1, ret2, t = stream_functions.synchronise_timeseries(ric1, ric2)
+                returns = [ret1, ret2]
+                # covariances
+                temp_mtx = np.cov(returns)
+                temp_covar = scale*temp_mtx[0][1]
+                temp_covar = np.round(temp_covar,self.nb_decimals)
+                mtx_covar[i][j] = temp_covar
+                mtx_covar[j][i] = temp_covar
+                # correlations
+                temp_mtx = np.corrcoef(returns)
+                temp_correl = temp_mtx[0][1]
+                temp_correl = np.round(temp_correl,self.nb_decimals)
+                mtx_correl[i][j] = temp_correl
+                mtx_correl[j][i] = temp_correl
+                if j == 0:
+                    temp_ret = ret1
+            # returns
+            temp_mean = np.round(scale*np.mean(temp_ret), self.nb_decimals)
+            vec_returns[i] = temp_mean
+            # volatilities
+            temp_volatility = np.round(np.sqrt(scale)*np.std(temp_ret), self.nb_decimals)
+            vec_volatilities[i] = temp_volatility
+            
+        self.covariance_matrix = mtx_covar
+        self.correlation_matrix = mtx_correl
+        self.returns = vec_returns
+        self.volatilities = vec_volatilities
+        
+        if bool_print:
+            print('-----')
+            print('Portfolio_manager details:')
+            print('Securities:')
+            print(self.rics)
+            print('Returns (annualised):')
+            print(self.returns)
+            print('Volatilities (annualised):')
+            print(self.volatilities)
+            print('Variance-covariance matrix (annualised):')
+            print(self.covariance_matrix)
+            print('Correlation matrix:')
+            print(self.correlation_matrix)
+            
+            
+    def compute_portfolio(self, portfolio_type, notional):
+        
+        port_item = portfolio_item(self.rics, notional)
+        
+        if portfolio_type == 'min-variance':
+            port_min_variance, variance_explained = \
+                stream_functions.compute_portfolio_min_variance(self.covariance_matrix, notional)
+            port_item.type = portfolio_type
+            port_item.weights = port_min_variance
+            port_item.variance_explained = variance_explained
+            
+        elif portfolio_type == 'pca' or portfolio_type == 'max-variance':
+            port_pca, variance_explained = \
+                stream_functions.compute_portfolio_pca(self.covariance_matrix, notional)
+            port_item.type = 'pca'
+            port_item.weights = port_pca
+            port_item.variance_explained = variance_explained
+            
+        port_item.delta = sum(port_item.weights)
+        port_item.pnl_annual = np.dot(port_item.weights.T,self.returns).item()
+        port_item.return_annual = port_item.pnl_annual / notional
+        port_item.volatility_annual = \
+            stream_functions.compute_portfolio_volatility(self.covariance_matrix, port_item.weights)
+        if port_item.volatility_annual > 0.0:
+            port_item.sharpe_annual =  port_item.return_annual / port_item.volatility_annual
+            
+        return port_item
+            
+            
+class portfolio_item():
+    
+    def __init__(self, rics, notional):
+        self.rics = rics
+        self.notional = notional
+        self.type = ''
+        self.weights = []
+        self.delta = 0.0
+        self.pnl_annual = 0.0
+        self.return_annual = 0.0
+        self.volatility_annual = 0.0
+        self.sharpe_annual = 0.0
+        self.variance_explained = None
+        self.target_return = None
+
+
+    def summary(self):
+        print('-----')
+        print('Portfolio type: ' + self.type)
+        print('Rics:')
+        print(self.rics)
+        print('Weights:')
+        print(self.weights)
+        print('Notional (mnUSD): ' + str(self.notional))
+        print('Delta (mnUSD): ' + str(self.delta))
+        print('PnL annual (mnUSD): ' + str(self.pnl_annual))
+        print('Return annual (mnUSD): ' + str(self.return_annual))
+        print('Volatility annual (mnUSD): ' + str(self.volatility_annual))
+        print('Sharpe ratio annual: ' + str(self.sharpe_annual))
+        if not self.variance_explained == None:
+            print('Variance explained: ' + str(self.variance_explained))
+        if not self.target_return == None:
+            print('Target Return: ' + str(self.target_return))
+        
